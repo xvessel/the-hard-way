@@ -1,0 +1,151 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+      - name: deploy prepare.sh
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/prepare.sh
+
+- hosts: masters
+  remote_user: root
+  tasks:
+      - name: create pki
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/create-all-certificate.sh
+
+      - name: create config
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/create-configuration-file.sh
+
+      - name: start master
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/start-master.sh
+        tags:
+          - start-master
+
+      - name: fetch pki 
+        become: yes
+        become_method: sudo
+        become_user: root
+        synchronize:
+          src:  /etc/kubernetes/pki
+          dest: ./ 
+          mode: pull
+        tags:
+          - copy-file 
+
+      - name: fetch config
+        become: yes
+        become_method: sudo
+        become_user: root
+        synchronize:
+          src:  /etc/kubernetes/config
+          dest: ./ 
+          mode: pull
+        tags:
+          - copy-file 
+
+- hosts: nodes
+  remote_user: root
+  tasks:
+      - name: init node
+        become: yes
+        become_method: sudo
+        become_user: root
+        command: mkdir -p /etc/kubernetes/pki && mkdir -p /etc/kubernetes/config
+        tags:
+          - copy-file-node
+          - copy-file 
+
+      - name: copy ca file
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./pki/ca.crt
+          dest: /etc/kubernetes/pki/ca.crt
+        tags:
+          - copy-file-node
+          - copy-file 
+
+      - name: copy k8s conf file
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./config/kube-proxy.conf
+          dest: /etc/kubernetes/config/kube-proxy.conf
+        tags:
+          - copy-file-node
+          - copy-file 
+
+
+- hosts: node1
+  remote_user: root
+  tasks:
+      - name: copy file from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./config/kubelet-node1.conf
+          dest: /etc/kubernetes/config/kubelet.conf
+        tags:
+          - copy-file-node
+          - copy-file 
+
+- hosts: node2
+  remote_user: root
+  tasks:
+      - name: copy file from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./config/kubelet-node2.conf
+          dest: /etc/kubernetes/config/kubelet.conf
+        tags:
+          - copy-file-node
+          - copy-file 
+
+- hosts: nodes
+  remote_user: root
+  tasks:
+      - name: start node 
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/start-node.sh
+        tags:
+          - start-node
+
+- hosts: masters
+  remote_user: root
+  tasks:
+      - name: copy flannel yaml 
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src:  ./flannel/kube-flannel.yml
+          dest: /etc/kubernetes/kube-flannel.yml
+        tags:
+          - copy-file-flannel
+
+      - name: apply-flannel
+        become: yes
+        become_method: sudo
+        become_user: root
+        command: kubectl apply -f /etc/kubernetes/kube-flannel.yml
+        tags:
+          - apply-flannel
+
+

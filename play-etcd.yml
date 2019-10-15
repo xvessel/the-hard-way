@@ -1,0 +1,28 @@
+---
+- hosts: master
+  remote_user: root
+  tasks:
+
+      - name: etcd clean
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./etcd/etcd-clean.sh
+
+      - name: etcd init
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./etcd/etcd-init.sh
+
+      - name: etcd start
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./etcd/etcd-start.sh
+
+      - name: etcd check
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./etcd/etcd-check.sh
