@@ -25,10 +25,14 @@ basicConstraints = critical,CA:true
 keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth
 
+[ k8s-kubelet-ext ]
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = DNS:node1, DNS:node2, IP:127.0.0.1, IP:100.64.0.11, IP:100.64.0.12, IP:100.64.0.13
 
 [ k8s-apiserver-ext ]
 keyUsage = critical, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth
+extendedKeyUsage = serverAuth, clientAuth
 subjectAltName = DNS:master, DNS:kubernetes.local, IP:127.0.0.1, IP:100.64.0.11, IP:10.32.0.1
 EOF
 
@@ -39,29 +43,29 @@ ca_key="${OUTPUT}/ca.key"    # 私钥
 ca_crt="${OUTPUT}/ca.crt"    # 证书
 cn="kubernetes"              # 签发机构
 
-function create_certificate(){ 
+function create_certificate(){
     name=$1
     subj=$2
     ext=$3
-    key=${OUTPUT}/${name}.key 
+    key=${OUTPUT}/${name}.key
     csr=${OUTPUT}/${name}.csr
-    crt=${OUTPUT}/${name}.crt 
+    crt=${OUTPUT}/${name}.crt
 
     # create csr
     openssl req -nodes -newkey rsa:2048 -keyout ${key} -out ${csr} -subj "${subj}"
-    
+
     # check csr
     #openssl req -noout -text -in ${csr}
-    
+
     # create cst
     openssl x509 -req -days 3650 -in ${csr} -CA ${ca_crt} -CAkey ${ca_key}  -CAcreateserial -out ${crt} \
                  -extfile ./openssl.cnf -extensions ${ext}
-    
+
     # check cst
     #openssl x509 -in ${crt} -noout -text
 
     rm ${csr}
-    
+
 }
 
 
@@ -74,8 +78,10 @@ create_certificate admin "/O=system:masters/CN=kubernetes-admin" k8s-common-ext
 
 
 #  Kubelet Client Certificates
-create_certificate kubelet-node1 "/O=system:nodes/CN=system:node:node1" k8s-common-ext
-create_certificate kubelet-node2 "/O=system:nodes/CN=system:node:node2" k8s-common-ext
+#create_certificate kubelet-node1 "/O=system:nodes/CN=system:node:node1" k8s-common-ext
+#create_certificate kubelet-node2 "/O=system:nodes/CN=system:node:node2" k8s-common-ext
+create_certificate kubelet-node1 "/O=system:nodes/CN=system:node:node1" k8s-kubelet-ext
+create_certificate kubelet-node2 "/O=system:nodes/CN=system:node:node2" k8s-kubelet-ext
 
 # The Controller Manager Client Certificate
 create_certificate kube-controller-manager "/O=system:kube-controller-manager/CN=system:kube-controller-manager" k8s-common-ext

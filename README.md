@@ -7,10 +7,9 @@
 - 1. 安装virtualbox
 - 2. 安装vagrant
 - 3. 安装ansible
-- 4. 下载所需资源
+- 4. 下载所需资源() TODO: add url
 
 todo, 将以下文件上传到对象存储。
-
 - 手动编译好的k8s bin文件，
 - 下载好的docker image文件
 - cni文件
@@ -24,7 +23,3 @@ todo, 将以下文件上传到对象存储。
 - 4. 清理： `vagrant destroy`
 
 
-TODO:
-- 1. fix node to apiserver clusterrolebiding
-- 2. fix apiserver to node: cert unknown author
-- 3. upload core-dns image

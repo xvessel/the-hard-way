@@ -1,0 +1,11 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+      - name: deploy prepare.sh
+        become: yes
+        become_method: sudo
+        become_user: root
+        script: ./script/prepare.sh
+
+

@@ -20,9 +20,9 @@ function start_one_etcd(){
     PEER_PORT=$4
     PEERS=$5
     DATA_DIR=$6
-    
+
     mkdir -p ${DATA_DIR}
-    nohup etcd \
+    nohup /usr/bin/etcd \
       --name ${ETCD_NAME} \
       --trusted-ca-file=${SERVER_CA_CERT} \
       --cert-file=${SERVER_CERT} \
@@ -42,12 +42,13 @@ function start_one_etcd(){
       --data-dir=${DATA_DIR} \
       --log-output stdout  > ${DATA_DIR}/etcd.log  2>&1 &
 
-    
+    sleep 1
 }
 
 
 peers="etcd-0=https://127.0.0.1:2380,etcd-1=https://127.0.0.1:12380,etcd-2=https://127.0.0.1:22380,"
 
-start_one_etcd "etcd-0" "127.0.0.1"  2379  2380 ${peers} "./etcd-data/etcd-0" 
-start_one_etcd "etcd-1" "127.0.0.1" 12379 12380 ${peers} "./etcd-data/etcd-1" 
-start_one_etcd "etcd-2" "127.0.0.1" 22379 22380 ${peers} "./etcd-data/etcd-2" 
+start_one_etcd "etcd-0" "127.0.0.1"  2379  2380 ${peers} "./etcd-data/etcd-0"
+start_one_etcd "etcd-1" "127.0.0.1" 12379 12380 ${peers} "./etcd-data/etcd-1"
+start_one_etcd "etcd-2" "127.0.0.1" 22379 22380 ${peers} "./etcd-data/etcd-2"
+sleep 1

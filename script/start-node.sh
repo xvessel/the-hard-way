@@ -83,6 +83,8 @@ staticPodPath: /etc/kubernetes/manifests
 streamingConnectionIdleTimeout: 4h0m0s
 syncFrequency: 1m0s
 volumeStatsAggPeriod: 1m0s
+tlsCertFile: /etc/kubernetes/pki/kubelet.crt
+tlsPrivateKeyFile: /etc/kubernetes/pki/kubelet.key
 
 EOF
 

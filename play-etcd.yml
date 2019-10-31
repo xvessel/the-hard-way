@@ -8,7 +8,9 @@
         become_method: sudo
         become_user: root
         script: ./etcd/etcd-clean.sh
-
+        tags: 
+          - etcd-clean 
+     
       - name: etcd init
         become: yes
         become_method: sudo

@@ -2,11 +2,13 @@
 - hosts: all
   remote_user: root
   tasks:
-      - name: deploy prepare.sh
+      - name: reset install 
         become: yes
         become_method: sudo
         become_user: root
-        script: ./script/prepare.sh
+        script: ./script/clean.sh
+        tags: 
+          - clean 
 
 - hosts: masters
   remote_user: root
@@ -16,12 +18,16 @@
         become_method: sudo
         become_user: root
         script: ./script/create-all-certificate.sh
+        tags: 
+          - init
 
       - name: create config
         become: yes
         become_method: sudo
         become_user: root
         script: ./script/create-configuration-file.sh
+        tags: 
+          - init
 
       - name: start master
         become: yes
@@ -62,7 +68,6 @@
         become_user: root
         command: mkdir -p /etc/kubernetes/pki && mkdir -p /etc/kubernetes/config
         tags:
-          - copy-file-node
           - copy-file 
 
       - name: copy ca file
@@ -73,7 +78,6 @@
           src: ./pki/ca.crt
           dest: /etc/kubernetes/pki/ca.crt
         tags:
-          - copy-file-node
           - copy-file 
 
       - name: copy k8s conf file
@@ -84,7 +88,6 @@
           src: ./config/kube-proxy.conf
           dest: /etc/kubernetes/config/kube-proxy.conf
         tags:
-          - copy-file-node
           - copy-file 
 
 
@@ -99,8 +102,26 @@
           src: ./config/kubelet-node1.conf
           dest: /etc/kubernetes/config/kubelet.conf
         tags:
-          - copy-file-node
           - copy-file 
+      - name: copy kubelet crt from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./pki/kubelet-node1.crt
+          dest: /etc/kubernetes/pki/kubelet.crt
+        tags:
+          - copy-file 
+      - name: copy kubelet key from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./pki/kubelet-node1.key
+          dest: /etc/kubernetes/pki/kubelet.key
+        tags:
+          - copy-file 
+
 
 - hosts: node2
   remote_user: root
@@ -113,8 +134,26 @@
           src: ./config/kubelet-node2.conf
           dest: /etc/kubernetes/config/kubelet.conf
         tags:
-          - copy-file-node
           - copy-file 
+      - name: copy kubelet crt from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./pki/kubelet-node2.crt
+          dest: /etc/kubernetes/pki/kubelet.crt
+        tags:
+          - copy-file 
+      - name: copy kubelet key from master to node
+        become: yes
+        become_method: sudo
+        become_user: root
+        copy:
+          src: ./pki/kubelet-node2.key
+          dest: /etc/kubernetes/pki/kubelet.key
+        tags:
+          - copy-file 
+
 
 - hosts: nodes
   remote_user: root
@@ -135,7 +174,7 @@
         become_method: sudo
         become_user: root
         copy:
-          src:  ./flannel/kube-flannel.yml
+          src:  ./k8s-yaml/kube-flannel.yml
           dest: /etc/kubernetes/kube-flannel.yml
         tags:
           - copy-file-flannel

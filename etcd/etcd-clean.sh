@@ -1,10 +1,6 @@
 #!/bin/bash
 set -x
 
-#pkill etcd # todo, ansible will exit 1
-rm /etc/kubernetes/etcd/*.crt
-rm /etc/kubernetes/etcd/*.srl
-rm /etc/kubernetes/etcd/*.nohup
-rm /etc/kubernetes/etcd/*.key
-rm -rf  /etc/kubernetes/etcd/etcd-data/*
+ps -ef | grep -v grep | grep -w '/usr/bin/etcd' | awk '{print $2}' | xargs -I{} -r kill -9 {}
+rm  -rf /etc/kubernetes/etcd/
 exit 0

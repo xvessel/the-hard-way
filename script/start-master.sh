@@ -19,6 +19,8 @@ APISERVER_INTERNAL_IP='100.64.0.11'
 APISERVER_COUNT=1
 APISERVER_CERT_FILE="${K8S_PKI_ROOT_DIR}/kube-api-server.crt"
 APISERVER_KEY_FILE="${K8S_PKI_ROOT_DIR}/kube-api-server.key"
+ADMIN_CERT_FILE="${K8S_PKI_ROOT_DIR}/admin.crt"
+ADMIN_KEY_FILE="${K8S_PKI_ROOT_DIR}/admin.key"
 
 # service account
 SA_KEY_FILE="${K8S_PKI_ROOT_DIR}/sa.key"
@@ -52,8 +54,8 @@ nohup kube-apiserver \
   --etcd-keyfile=${ETCD_CLIENT_KEY_FILE} \
   --etcd-servers=${ETCD_SERVERS} \
   --kubelet-certificate-authority=${K8S_CA_FILE} \
-  --kubelet-client-certificate=${APISERVER_CERT_FILE} \
-  --kubelet-client-key=${APISERVER_KEY_FILE} \
+  --kubelet-client-certificate=${ADMIN_CERT_FILE} \
+  --kubelet-client-key=${ADMIN_KEY_FILE} \
   --service-account-key-file=${SA_PUB_FILE} \
   --service-cluster-ip-range=10.32.0.0/24 \
   --service-node-port-range=30000-32767 \
@@ -79,7 +81,7 @@ nohup kube-controller-manager \
   --node-cidr-mask-size=24 \
   --root-ca-file=${K8S_CA_FILE} \
   --service-account-private-key-file=${SA_KEY_FILE} \
-  --use-service-account-credentials=true > ${K8S_LOG_ROOT_DIR}/controller.log 2>&1 & 
+  --use-service-account-credentials=true > ${K8S_LOG_ROOT_DIR}/controller.log 2>&1 &
 
 # start schduler
 nohup kube-scheduler \
